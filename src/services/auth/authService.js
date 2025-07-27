@@ -1,7 +1,7 @@
 import { db } from "../../db/indexedDB";
 import { encryptData, decryptData } from "../../utils/cryptoUtils";
 
-const API_URL = "http://localhost:3000/api/auth";
+const API_URL = "https://backend-node-9ax3.onrender.com/api/auth";
 
 export const login = async (username, password) => {
   try {

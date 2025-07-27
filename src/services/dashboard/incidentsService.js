@@ -1,6 +1,6 @@
 import { saveSecureData } from '../security/saveDataService';
 
-const API_URL = "http://localhost:3000/api/inicidencia";
+const API_URL = "https://backend-node-9ax3.onrender.com/api/inicidencia";
 
 export const createIncident = async (formData) => {
   try {

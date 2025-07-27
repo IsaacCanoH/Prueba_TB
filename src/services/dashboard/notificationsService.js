@@ -2,7 +2,7 @@ import { db } from "../../db/indexedDB";
 import { encryptData, decryptData } from "../../utils/cryptoUtils";
 import { saveSecureData } from "../security/saveDataService";
 
-const API_URL = "http://localhost:3000/api/notificacion";
+const API_URL = "https://backend-node-9ax3.onrender.com/api/notificacion";
 
 // Crea una notificación en el backend.
 export const createNotificationApi = async (data) => {
