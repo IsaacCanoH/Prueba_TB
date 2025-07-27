@@ -78,16 +78,16 @@ export const useQrAndFace = (usuario, attendanceHistory = []) => {
       const workInfo = usuario?.work_info;
 
       if (qrText !== workInfo?.block_key_qr) {
-        showError("El c贸digo QR escaneado no es v谩lido para esta sede.");
+        showError("El código QR escaneado no es válido para esta sede.");
         return;
       }
 
       if (!workInfo?.lat || !workInfo?.lng) {
-        showError("No se pudo obtener la ubicaci贸n esperada.");
+        showError("No se pudo obtener la ubicación esperada.");
         return;
       }
 
-      showLoader("Obteniendo ubicaci贸n precisa...");
+      showLoader("Obteniendo ubicación precisa...");
 
       const currentCoords = await getCoordinates();
       const distance = getDistanceInMeters(
@@ -100,15 +100,15 @@ export const useQrAndFace = (usuario, attendanceHistory = []) => {
       hideLoader();
 
       if (distance <= 100) {
-        console.log("Ubicaci贸n validada correctamente (antes de facial)");
+        console.log("Ubicación validada correctamente (antes de facial)");
         setQrDetectado(qrText);
         setShowFaceModal(true);
       } else {
-        showError("Est谩s fuera del rango de la ubicaci贸n esperada.");
+        showError("Estás fuera del rango de la ubicación esperada.");
       }
 
     } catch (err) {
-      console.error("Error obteniendo ubicaci贸n:", err.message);
+      console.error("Error obteniendo ubicación:", err.message);
       showError("No se pudo obtener la ubicaci贸n actual.");
     }
   }, [usuario, getCoordinates, showError]);
@@ -157,7 +157,7 @@ export const useQrAndFace = (usuario, attendanceHistory = []) => {
   const handleFaceFailure = useCallback(() => {
     setShowFaceModal(false);
     setQrDetectado(null);
-    showError("Fall贸 la autenticaci贸n facial.");
+    showError("Falló la autenticación facial.");
   }, [showError]);
 
   return {
