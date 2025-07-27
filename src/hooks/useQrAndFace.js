@@ -8,14 +8,12 @@ import {
   isWithinAllowedTimeRange,
   getPunctualityStatus
 } from "../utils/attendanceValidator";
-import { createAttendance, saveAttendanceOffline } from "../services/dashboard/attendancesService";
-import { useNotifications } from "../context/NotificationContext";
+import { createAttendance } from "../services/dashboard/attendancesService";
 
 export const useQrAndFace = (usuario, attendanceHistory = []) => {
   const { showSuccess, showError } = useToast();
   const { getCoordinates } = useGeolocation();
   const { showLoader, hideLoader } = useLoader();
-  const { createNotification } = useNotifications();
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [showFaceModal, setShowFaceModal] = useState(false);
@@ -41,6 +39,7 @@ export const useQrAndFace = (usuario, attendanceHistory = []) => {
     });
 
     const todayRecord = attendanceHistory.find((a) => a.fecha === todayString);
+
     if (!todayRecord) return { entrada: false, salida: false };
 
     return {
@@ -79,16 +78,16 @@ export const useQrAndFace = (usuario, attendanceHistory = []) => {
       const workInfo = usuario?.work_info;
 
       if (qrText !== workInfo?.block_key_qr) {
-        showError("El código QR escaneado no es válido para esta sede.");
+        showError("El c贸digo QR escaneado no es v谩lido para esta sede.");
         return;
       }
 
       if (!workInfo?.lat || !workInfo?.lng) {
-        showError("No se pudo obtener la ubicación esperada.");
+        showError("No se pudo obtener la ubicaci贸n esperada.");
         return;
       }
 
-      showLoader("Obteniendo ubicación precisa...");
+      showLoader("Obteniendo ubicaci贸n precisa...");
 
       const currentCoords = await getCoordinates();
       const distance = getDistanceInMeters(
@@ -101,21 +100,22 @@ export const useQrAndFace = (usuario, attendanceHistory = []) => {
       hideLoader();
 
       if (distance <= 100) {
-        console.log("Ubicación validada correctamente (antes de facial)");
+        console.log("Ubicaci贸n validada correctamente (antes de facial)");
         setQrDetectado(qrText);
         setShowFaceModal(true);
       } else {
-        showError("Estás fuera del rango de la ubicación esperada.");
+        showError("Est谩s fuera del rango de la ubicaci贸n esperada.");
       }
 
     } catch (err) {
-      console.error("Error obteniendo ubicación:", err.message);
-      showError("No se pudo obtener la ubicación actual.");
+      console.error("Error obteniendo ubicaci贸n:", err.message);
+      showError("No se pudo obtener la ubicaci贸n actual.");
     }
   }, [usuario, getCoordinates, showError]);
 
   const handleFaceSuccess = useCallback(async () => {
     setShowFaceModal(false);
+
     if (!qrDetectado) return;
 
     try {
@@ -136,80 +136,18 @@ export const useQrAndFace = (usuario, attendanceHistory = []) => {
       formData.append("usuario_id", usuario?.user?.empleado_id);
       formData.append("tipo", tipo);
       formData.append("condicion", condicion);
-      formData.append("fecha_hora_registro", getLocalISOString(now));
+      formData.append("fecha_hora_registro", getLocalISOString(now)); // 馃憟 HORA LOCAL
       formData.append("ubicacion_lat", latitude.toString());
       formData.append("ubicacion_lon", longitude.toString());
 
-      try {
-        const result = await createAttendance(formData);
+      console.log("FORM DATA ENVIADO:", Object.fromEntries(formData));
 
-        if (!result || result.status !== "success") {
-          throw new Error("Respuesta inesperada del servidor.");
-        }
+      await createAttendance(formData);
 
-        const capitalizeFirst = tipo.charAt(0).toUpperCase() + tipo.slice(1);
-
-        try {
-          await createNotification({
-            usuario_id: usuario?.user?.empleado_id,
-            titulo: "Asistencia Registrada",
-            mensaje: `${capitalizeFirst} del día registrada correctamente`,
-            tipo: "exito",
-            metadata: {
-              tipo_asistencia: tipo,
-              condicion,
-              fecha_hora: getLocalISOString(now),
-              ubicacion: {
-                lat: latitude,
-                lon: longitude,
-              },
-              sede: usuario?.work_info?.office_name,
-              horario: usuario?.schedule || null,
-            }
-          });
-        } catch (notifErr) {
-          console.warn("No se pudo guardar la notificación:", notifErr.message);
-        }
-
-        showSuccess(`Asistencia registrada correctamente como ${tipo}.`);
-
-      } catch (err) {
-        console.warn("Error enviando asistencia. Guardando offline:", err.message);
-
-        const offlineData = {
-          usuario_id: usuario?.user?.empleado_id,
-          tipo,
-          condicion,
-          fecha_hora_registro: getLocalISOString(now),
-          ubicacion_lat: latitude.toString(),
-          ubicacion_lon: longitude.toString(),
-        };
-
-        try {
-          await saveAttendanceOffline(offlineData);
-        } catch (offlineErr) {
-          console.warn("Error guardando asistencia offline:", offlineErr.message);
-        }
-
-        try {
-          await createNotification({
-            usuario_id: usuario?.user?.empleado_id,
-            titulo: "Asistencia Pendiente",
-            mensaje: `No se pudo enviar la ${tipo}, se sincronizará luego.`,
-            tipo: "alerta",
-            fecha_creacion: new Date().toISOString(),
-            metadata: offlineData,
-          });
-        } catch (notifErr) {
-          console.warn("Error creando notificación offline:", notifErr.message);
-        }
-
-        showSuccess(`Asistencia ${tipo} almacenada localmente. Se enviará cuando haya conexión.`);
-      }
-
+      showSuccess(`Asistencia registrada correctamente como ${tipo}.`);
       setQrDetectado(null);
     } catch (err) {
-      console.error("Error general registrando asistencia:", err.message);
+      console.error("Error registrando asistencia:", err.message);
       showError("No se pudo registrar la asistencia.");
     } finally {
       hideLoader();
@@ -219,7 +157,7 @@ export const useQrAndFace = (usuario, attendanceHistory = []) => {
   const handleFaceFailure = useCallback(() => {
     setShowFaceModal(false);
     setQrDetectado(null);
-    showError("Falló la autenticación facial.");
+    showError("Fall贸 la autenticaci贸n facial.");
   }, [showError]);
 
   return {
