@@ -1,0 +1,46 @@
+/* QRModal.css */
+.qr-scanner-wrapper {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 70vh;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+#qr-scanner-container {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#qr-scanner-container > video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  transform: none;
+}
+
+
+@media (max-width: 576px) {
+  .qr-scanner-wrapper {
+    max-height: 70vh;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
